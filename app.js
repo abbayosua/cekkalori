@@ -90,7 +90,7 @@ createApp({
         }
 
         function startScanner() {
-            if (!document.getElementById('scanner')) return;
+            if (!document.getElementById('scanner') || typeof Html5Qrcode === 'undefined') return;
             html5QrCode = new Html5Qrcode('scanner');
             html5QrCode.start(
                 { facingMode: 'environment' },
