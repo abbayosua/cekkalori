@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cek Kalori</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cek Kalori">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.svg">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header>
+                <h1>Cek Kalori</h1>
+                <p>Scan barcode makanan untuk cek kalori</p>
+            </header>
+
+            <div v-if="showInstallBar" class="install-bar">
+                <span class="install-text">Pasang aplikasi untuk akses cepat</span>
+                <button class="btn-install" @click="installApp">Pasang</button>
+                <button class="btn-install-dismiss" @click="dismissInstallBar">&times;</button>
+            </div>
+
+            <div class="scanner-section">
+                <div id="scanner"></div>
+                <div id="scanner-status">{{ scannerStatus }}</div>
+            </div>
+
+            <div class="manual-section">
+                <p class="or-divider">atau</p>
+                <div class="manual-input">
+                    <input v-model="barcodeInput" placeholder="Masukkan kode barcode" maxlength="13" @keydown.enter="lookupBarcode">
+                    <button @click="lookupBarcode">Cari</button>
+                </div>
+            </div>
+
+            <div v-if="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Mencari data...</p>
+            </div>
+
+            <div v-if="result || error" class="result-section">
+                <div class="result-card">
+                    <div class="result-header">
+                        <h2>{{ result ? result.name : '-' }}</h2>
+                        <span class="brand">{{ result ? result.brand : '-' }}</span>
+                    </div>
+                    <div class="calorie-display">
+                        <span class="calorie-value">{{ result ? result.calories : 0 }}</span>
+                        <span class="calorie-unit">kkal</span>
+                        <span class="calorie-label">per 100g / 100ml</span>
+                    </div>
+                    <div v-if="result" class="nutrients">
+                        <div class="nutrient">
+                            <span class="nutrient-label">Protein</span>
+                            <span class="nutrient-value">{{ result.nutrients.protein }}</span>
+                        </div>
+                        <div class="nutrient">
+                            <span class="nutrient-label">Lemak</span>
+                            <span class="nutrient-value">{{ result.nutrients.fat }}</span>
+                        </div>
+                        <div class="nutrient">
+                            <span class="nutrient-label">Karbohidrat</span>
+                            <span class="nutrient-value">{{ result.nutrients.carbs }}</span>
+                        </div>
+                        <div class="nutrient">
+                            <span class="nutrient-label">Gula</span>
+                            <span class="nutrient-value">{{ result.nutrients.sugar }}</span>
+                        </div>
+                        <div class="nutrient">
+                            <span class="nutrient-label">Serat</span>
+                            <span class="nutrient-value">{{ result.nutrients.fiber }}</span>
+                        </div>
+                        <div class="nutrient">
+                            <span class="nutrient-label">Garam</span>
+                            <span class="nutrient-value">{{ result.nutrients.salt }}</span>
+                        </div>
+                    </div>
+                    <div v-if="result && result.serving_size" class="serving-size">
+                        Ukuran penyajian: {{ result.serving_size }}
+                    </div>
+                    <div v-if="error" class="error-message">{{ error }}</div>
+                </div>
+            </div>
+
+            <div v-if="recent.length" class="recent-section">
+                <div class="recent-header">
+                    <h3>Riwayat Scan</h3>
+                    <button class="btn-clear" @click="clearHistory">Hapus</button>
+                </div>
+                <ul id="recent-list">
+                    <li v-for="(item, index) in recent" :key="index" @click="showFromHistory(item)">
+                        <span class="recent-info">
+                            <span class="recent-name">{{ item.name }}</span>
+                            <span class="recent-time">{{ formatTime(item.timestamp) }}</span>
+                        </span>
+                        <span class="recent-cal">{{ item.calories }} kkal</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div v-if="showIOSInstall" class="ios-install" @click.self="dismissIOSInstall">
+            <div class="ios-install-content">
+                <button class="btn-install-dismiss" @click="dismissIOSInstall">&times;</button>
+                <p>Install aplikasi ini ke layar utama:</p>
+                <ol>
+                    <li>Tap <strong>Share</strong> <span class="ios-icon">&#8679;</span></li>
+                    <li>Pilih <strong>Add to Home Screen</strong></li>
+                    <li>Tap <strong>Add</strong></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html>
