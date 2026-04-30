@@ -9,6 +9,7 @@ body {
     background: #f5f7fa;
     color: #1a1a2e;
     min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .container {
@@ -19,7 +20,7 @@ body {
 
 header {
     text-align: center;
-    padding: 24px 0 16px;
+    padding: 24px 0 12px;
 }
 
 header h1 {
@@ -35,6 +36,56 @@ header p {
     color: #718096;
     font-size: 14px;
     margin-top: 4px;
+}
+
+.install-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #fff5f5, #fff0e6);
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.install-text {
+    flex: 1;
+    font-size: 13px;
+    color: #c2410c;
+    font-weight: 500;
+}
+
+.btn-install {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-install:active {
+    opacity: 0.8;
+}
+
+.btn-install-dismiss {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
 }
 
 .scanner-section {
@@ -255,11 +306,32 @@ header p {
     padding-bottom: 32px;
 }
 
-.recent-section h3 {
+.recent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.recent-header h3 {
     font-size: 16px;
     font-weight: 700;
-    margin-bottom: 12px;
     color: #2d3748;
+}
+
+.btn-clear {
+    padding: 6px 14px;
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #718096;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-clear:active {
+    background: #f7fafc;
 }
 
 #recent-list {
@@ -279,21 +351,84 @@ header p {
     transition: background 0.2s;
 }
 
-#recent-list li:hover {
+#recent-list li:active {
     background: #f7fafc;
+}
+
+#recent-list .recent-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
 }
 
 #recent-list .recent-name {
     font-size: 14px;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#recent-list .recent-time {
+    font-size: 11px;
+    color: #a0aec0;
 }
 
 #recent-list .recent-cal {
     font-size: 14px;
     font-weight: 700;
     color: #ee5a24;
+    white-space: nowrap;
+    margin-left: 12px;
+}
+
+.ios-install {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+}
+
+.ios-install-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 320px;
+    width: 100%;
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+.ios-install-content .btn-install-dismiss {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.ios-install-content p {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #2d3748;
+}
+
+.ios-install-content ol {
+    list-style: decimal;
+    padding-left: 20px;
+    font-size: 14px;
+    color: #4a5568;
+    line-height: 2;
+}
+
+.ios-install-content .ios-icon {
+    font-size: 16px;
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }

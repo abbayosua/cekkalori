@@ -1,5 +1,18 @@
 let html5QrCode = null;
 let isScanning = false;
+let deferredPrompt = null;
+
+function formatTime(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return 'baru saja';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm yang lalu';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'j yang lalu';
+    const opts = { day: 'numeric', month: 'short' };
+    if (d.getFullYear() !== now.getFullYear()) opts.year = 'numeric';
+    return d.toLocaleDateString('id', opts);
+}
 
 function loadRecent() {
     const recent = JSON.parse(localStorage.getItem('cekKaloriRecent') || '[]');
@@ -11,9 +24,10 @@ function loadRecent() {
         return;
     }
     section.classList.remove('hidden');
-    recent.forEach(item => {
+    recent.forEach((item, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="recent-name">${item.name}</span><span class="recent-cal">${item.calories} kkal</span>`;
+        const timeStr = item.timestamp ? formatTime(item.timestamp) : '';
+        li.innerHTML = `<span class="recent-info"><span class="recent-name">${item.name}</span><span class="recent-time">${timeStr}</span></span><span class="recent-cal">${item.calories} kkal</span>`;
         li.addEventListener('click', () => showResult(item));
         list.appendChild(li);
     });
@@ -22,9 +36,23 @@ function loadRecent() {
 function saveRecent(data) {
     let recent = JSON.parse(localStorage.getItem('cekKaloriRecent') || '[]');
     recent = recent.filter(item => item.name !== data.name);
-    recent.unshift({ name: data.name, brand: data.brand, calories: data.calories, nutrients: data.nutrients, image: data.image, serving_size: data.serving_size });
-    if (recent.length > 10) recent = recent.slice(0, 10);
+    recent.unshift({
+        name: data.name,
+        brand: data.brand,
+        calories: data.calories,
+        nutrients: data.nutrients,
+        image: data.image,
+        serving_size: data.serving_size,
+        timestamp: Date.now()
+    });
+    if (recent.length > 20) recent = recent.slice(0, 20);
     localStorage.setItem('cekKaloriRecent', JSON.stringify(recent));
+    loadRecent();
+}
+
+function clearHistory() {
+    if (!confirm('Hapus semua riwayat scan?')) return;
+    localStorage.removeItem('cekKaloriRecent');
     loadRecent();
 }
 
@@ -95,7 +123,6 @@ async function lookupBarcode(barcode) {
 }
 
 function startScanner() {
-    const scannerEl = document.getElementById('scanner');
     const statusEl = document.getElementById('scanner-status');
 
     html5QrCode = new Html5Qrcode('scanner');
@@ -123,6 +150,36 @@ function startScanner() {
     });
 }
 
+function showInstallBar() {
+    const bar = document.getElementById('install-bar');
+    if (bar) bar.classList.remove('hidden');
+}
+
+function hideInstallBar() {
+    const bar = document.getElementById('install-bar');
+    if (bar) bar.classList.add('hidden');
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallBar();
+});
+
+document.getElementById('btn-install')?.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+        hideInstallBar();
+    }
+    deferredPrompt = null;
+});
+
+document.getElementById('btn-install-dismiss')?.addEventListener('click', hideInstallBar);
+
+document.getElementById('btn-clear-history')?.addEventListener('click', clearHistory);
+
 document.getElementById('btn-manual').addEventListener('click', () => {
     const input = document.getElementById('barcode-input');
     const barcode = input.value.trim();
@@ -137,6 +194,27 @@ document.getElementById('barcode-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         document.getElementById('btn-manual').click();
     }
+});
+
+if (navigator.standalone) {
+    document.getElementById('install-bar')?.classList.add('hidden');
+}
+
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent) && !navigator.standalone) {
+    const iosEl = document.getElementById('ios-install');
+    const dismissed = localStorage.getItem('cekKaloriIosDismissed');
+    if (iosEl && !dismissed) {
+        iosEl.classList.remove('hidden');
+    }
+    document.getElementById('btn-ios-dismiss')?.addEventListener('click', () => {
+        document.getElementById('ios-install')?.classList.add('hidden');
+        localStorage.setItem('cekKaloriIosDismissed', '1');
+    });
+}
+
+window.addEventListener('appinstalled', () => {
+    hideInstallBar();
+    deferredPrompt = null;
 });
 
 window.addEventListener('load', () => {
